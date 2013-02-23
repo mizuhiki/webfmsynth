@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Web FM synthesizer made with HTML5</title>
+    <!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <link href='http://fonts.googleapis.com/css?family=Archivo+Narrow' rel='stylesheet' type='text/css'>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="sprintf.js"></script>
+    <script type="text/javascript" src="parseuri.js"></script>
+    <script type="text/javascript" src="EGView.js"></script>
+    <script type="text/javascript" src="AlgView.js"></script>
+    <script type="text/javascript" src="FaderView.js"></script>
+    <script type="text/javascript" src="SpectrumView.js"></script>
+    <script type="text/javascript" src="VoiceParameters.js"></script>
+    <script type="text/javascript" src="PresetVoiceBank.js"></script>
+    <script type="text/javascript" src="EG.js"></script>
+    <script type="text/javascript" src="FMToneGenerator.js"></script>
+    <script type="text/javascript" src="Application.js"></script>
+    <script type="text/javascript" src="webmidilink.js"></script>
+  </head>
+  
+  <body onselectstart="return false;">
+  <div style="position: relative; height: 768px; float: left;">
+    <img src="images/background.png" class="origin0" ondragstart="return false;">
+    <img id="knob_coarse"   src="images/fader_knob.png" style="position: absolute; top: 398px; left: 134px;" ondragstart="return false;">
+    <img id="knob_fine"     src="images/fader_knob.png" style="position: absolute; top: 398px; left: 177px;" ondragstart="return false;">
+    <img id="knob_feedback" src="images/fader_knob.png" style="position: absolute; top: 398px; left: 231px;" ondragstart="return false;">
+    <img id="knob_velocity" src="images/fader_knob.png" style="position: absolute; top: 530px; left: 68px;" ondragstart="return false;">
+
+    <div id="OP1" style="position: absolute; top: 38px; left: 370px; width: 274px; height: 170px;">
+      <div id="OP1_text" class="optext">1</div>
+      <canvas width="274" height="170" class="origin0"><!-- --></canvas>
+    </div>
+    
+    <div id="OP2" style="position: absolute; top: 38px; left: 677px; width: 274px; height: 170px;">
+      <div id="OP2_text" class="optext">2</div>
+      <canvas width="274" height="170" class="origin0"><!-- --></canvas>
+    </div>
+    
+    <div id="OP3" style="position: absolute; top: 243px; left: 370px; width: 274px; height: 170px;">
+      <div id="OP3_text" class="optext">3</div>
+      <canvas width="274" height="170" class="origin0"><!-- --></canvas>
+    </div>
+    
+    <div id="OP4" style="position: absolute; top: 243px; left: 677px; width: 274px; height: 170px;">
+      <div id="OP4_text" class="optext">4</div>
+      <canvas width="274" height="170" class="origin0"><!-- --></canvas>
+    </div>
+    
+    <canvas id="canvas_ALG" width="190" height="170" style="position: absolute; top: 38px; left: 66px;"><!-- --></canvas>
+    <canvas id="canvas_SPECTRUM" width="128" height="44" style="position: absolute; top: 478px; left: 752px;"><!-- --></canvas>
+    
+    <div id="ratio" class="opparamvalue" style="position: absolute;
+						top: 418px; left: 146px; width: 40px;">
+      1.00
+    </div>
+    <div id="feedback" class="opparamvalue" style="position: absolute;
+						   top: 418px; left: 220px; width: 40px;">
+      0.00
+    </div>
+
+    <div id="curOP" class="curoptext" style="position: absolute; top: 380px; left: 86px;">
+      1
+    </div>
+    
+    <div id="keyboard" style="position: absolute; width: 932px; height: 190px; top: 580px; left: 47px;">
+        <div id="keymask" style="position: relative; display: none; background-color: black; opacity: 0.7;"><!-- --></div>
+    </div>
+    
+    <div id="button_velsens" style="position: absolute; width: 50px; height: 20px; top: 243px; left: 74px;">
+      <img id="led_velsens" src="images/led_on.png" style="display: none;">
+    </div>
+    
+    <div id="button_egloop" style="position: absolute; width: 50px; height: 20px; top: 243px; left: 132px;">
+      <img id="led_egloop" src="images/led_on.png" style="display: none;">
+    </div>
+    
+    <div id="button_ratio" style="position: absolute; width: 50px; height: 20px; top: 301px; left: 76px;">
+      <img id="led_ratio" src="images/led_on.png" style="display: none;">
+    </div>
+    
+    <div id="button_fixed" style="position: absolute; width: 50px; height: 20px; top: 332px; left: 76px;">
+      <img id="led_fixed" src="images/led_on.png" style="display: none;">
+    </div>
+    
+    <div id="button_edit" style="position: absolute; width: 50px; height: 20px; top: 476px; left: 346px;"><!-- --></div>
+    <img id="edit" src="images/edit.png" style="position: absolute; top: 328px; left: 223px; display: none;" ondragstart="return false;">
+
+    <div id="button_effect" style="position: absolute; width: 50px; height: 20px; top: 476px; left: 396px;"><!-- --></div>
+    <img id="effect" src="images/effect.png" style="position: absolute; top: 454px; left: 442px; display: none;" ondragstart="return false;">
+
+    <div id="button_sequencer" style="position: absolute; width: 50px; height: 20px; top: 502px; left: 346px;"><!-- --></div>
+    <img id="sequencer" src="images/sequencer.png" style="position: absolute; top: 136px; left: 120px; display: none;" ondragstart="return false;">
+
+    <div id="button_recorder" style="position: absolute; width: 50px; height: 20px; top: 502px; left: 396px;"><!-- --></div>
+    <img id="recorder" src="images/recorder.png" style="position: absolute; top: 454px; left: 460px; display: none;" ondragstart="return false;">
+
+    <div id="button_waveselect" style="position: absolute; width: 50px; height: 20px; top: 242px; left: 186px;"><!-- --></div>
+    <img id="waveselect" src="images/waveselect.png" style="position: absolute; top: 30px; left: 240px; display: none;" ondragstart="return false;">
+
+    <div id="ProgramNo" style="position: absolute; top: 488px; left: 150px; width: 30px;"><!-- --></div>
+    <div id="VoiceName" style="color: black; position: absolute; top: 487px; left: 194px; width: 116px; height: 22px; line-height: 22px; font-size: 18px; vertical-align: middle; font-family: sans-serif; font-weight: bold;"><!-- --></div>
+   	<input id="VoiceNameEdit" style="display: none; position: absolute; top: 485px; left: 190px; width: 114px; height: 18px; font-size: 16px; vertical-align: middle; font-family: sans-serif; font-weight: bold;">
+    <div id="button_progUp"   style="position: absolute; top: 457px; left: 124px; width: 200px; height: 22px;"><!-- --></div>
+    <div id="button_progDown" style="position: absolute; top: 517px; left: 124px; width: 200px; height: 22px;"><!-- --></div>
+
+  	<div id="webaudioalert" style="display: none; position: absolute; text-align: center; width: 600px; top: 210px; left: 200px; center; font-size: 24px; background-color: black; color: red; opacity: 0.8; padding: 20px 20px 20px 20px;">
+  		Web Audio API is not available on your browser.
+  	</div>
+
+  </div>
+ 
+  <div id="share" style="position: relative; left: 1024px; height: 768px; float: left;">
+    <script src="http://widgets.twimg.com/j/2/widget.js"></script>
+	<script>
+		new TWTR.Widget({
+			version: 2,
+			type: 'search',
+			search: '#webfmsynth',
+			interval: 6000,
+			title: '',
+			subject: '#webfmsynth',
+			width: 250,
+			height: 320,
+  			theme: {
+    			shell: {
+      				background: '#51A798',
+      				color: '#ffffff'
+		    	},
+    			tweets: {
+      				background: '#ffffff',
+      				color: '#444444',
+      				links: '#17b9ff'
+    			}
+  			},
+			features: {
+				scrollbar: true,
+				loop: false,
+				live: true,
+				hashtags: true,
+				timestamp: true,
+				avatars: true,
+				toptweets: true,
+				behavior: 'default'
+			}
+		}).render().start();
+	</script>
+	<br>
+	<!-- Twitter share button -->
+	<div align="center"><a style="font-family: 'Archivo Narrow', sans-serif; font-size: 14pt;" href="javascript:share();">Share Your Sound to Followers</a></div><br>
+	<!-- Facebook Like button -->
+	<iframe src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Fwww.taktech.org%2Ftakm%2FWebFMSynth%2F&amp;send=false&amp;layout=standard&amp;width=250&amp;show_faces=true&amp;font&amp;colorscheme=dark&amp;action=like&amp;height=80" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:250px; height:80px;" allowTransparency="true"></iframe>
+  </div>
+
+  <div id="about" style="position: relative; clear: both;">
+  <H1 style="font-family: 'Archivo Narrow', sans-serif; font-size: 24pt;">Web FM synthesizer made with HTML5</H1>
+  <ul>
+  	<li>The application requires a web browser supports Web Audio API.
+  	<li>The application supports <A HREF="http://www.g200kg.com/en/docs/webmidilink/">WebMidiLink by g200kg</A>.
+  	<li><A HREF="http://aikelab.net/websynth/">WebAudioSynth by aike</A> serves as a good reference of Web Audio API.
+  	<li>IR data from <A HREF="http://fokkie.home.xs4all.nl/IR.htm">Impulse Responses by Fokke van Saane.</A>
+  </ul>
+
+  Please see also:<br>
+  <div style="float: left; width: 100px;  padding: 20px 0px 20px 20px;"><img src="DXi_icon.png"></div>
+  <div style="float: left; font-size: 14pt; padding: 10px 20px 10px 0px;">
+  	<a href="http://www.taktech.org/takm/DXie/DXi_for_iPhone.html" style="text-decoration: none;">
+    	<div style="font-size: 14pt;">DXi FM synthesizer for iPhone/iPad</div>
+    	<div style="font-size: 10pt;">2010-2012 Takashi Mizuhiki &amp; creative studio CUE</div>
+		<div style="padding-top:10px;">
+		<img src="Available_on_the_App_Store_Badge_US-UK_135x40_0801.svg" width="135px" height="40px">
+		</div>
+	</a>
+  </div>
+  <div style="float: left;  padding: 20px 20px 20px 20px;">
+  <iframe width="420" height="236" src="http://www.youtube.com/embed/qiUgB2eUoIU?rel=0" frameborder="0" allowfullscreen></iframe>
+  </div>
+  </div>
+  
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-20653559-1']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script>
+
+  </body>
+</html>
+

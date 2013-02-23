@@ -1,0 +1,72 @@
+.optext {
+    color: white;
+    font-size: 100px;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-align: center;
+    line-height: 170px;
+    opacity: 0.5;
+}
+
+.curoptext {
+    color: green;
+    font-size: 24px;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-align: center;
+    line-height: 30px;
+    width: 30px;
+}
+
+.opparamvalue {
+    font-size: 12pt;
+    font-family: sans-serif;
+    color: white;
+    text-align: right;
+}
+
+.origin0 {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+body {
+	color: #DDDDDD;
+	background-color: black;
+	font-family: sans-serif;
+}
+
+#about a:link {
+	color: #DDDDDD;
+}
+
+#about a:visited {
+	color: #DDDDDD;
+}
+
+#share {
+	padding: 20px 20px 20px 20px;
+	background-color: black;
+	opacity: 0.9;
+}
+
+#share a:link {
+	color:#51A798;
+	font-weight: bold;
+	text-decoration:underline;
+}
+#share a:visited{
+	color:#fff;
+	text-decoration:underline;
+}
+#share a:hover{
+	color:#999;
+	text-decoration:none;
+}
+#share a:active{
+	color:#fff;
+	text-decoration:underline;
+}
+
+
