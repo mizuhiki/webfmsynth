@@ -10,54 +10,54 @@ var Application = function() {
     this.theSpectrumView = 0;
 
     // Initialize Audio I/O
-    const BUFFER_SIZE = 2048;                                   
-    const NUM_OUTPUTS = 2;              
-    
+    const BUFFER_SIZE = 2048;
+    const NUM_OUTPUTS = 2;
+
     //const NUM_INPUTS = 0; // Results in horrible noise in Safari 6
-    const NUM_INPUTS = 1; // Works properly in Safari 6 
-    
+    const NUM_INPUTS = 1; // Works properly in Safari 6
+
     this.context = new webkitAudioContext();
     this.node = this.context.createJavaScriptNode(BUFFER_SIZE, NUM_INPUTS, NUM_OUTPUTS);
 
     this.analyzer = this.context.createAnalyser();
     this.analyzer.fftSize = 256;
 
-	this.convolver = this.context.createConvolver();
-	var request = new XMLHttpRequest();
-	var _this = this;
-	request.open("GET", "DEP3_cheap.wav", true);
-	request.responseType = "arraybuffer";
-	request.onload = function() {
-		_this.context.decodeAudioData(request.response, function(buffer) {
-			_this.convolver.buffer = buffer;	
-		})
-	}
+    this.convolver = this.context.createConvolver();
+    var request = new XMLHttpRequest();
+    var _this = this;
+    request.open("GET", "DEP3_cheap.wav", true);
+    request.responseType = "arraybuffer";
+    request.onload = function() {
+        _this.context.decodeAudioData(request.response, function(buffer) {
+            _this.convolver.buffer = buffer;
+        })
+    }
     request.send();
 
-	this.compressor = this.context.createDynamicsCompressor();
-    
-	this.convolverGain = this.context.createGainNode();
-	this.convolverGain.gain.value = 0.3;
-    
+    this.compressor = this.context.createDynamicsCompressor();
+
+    this.convolverGain = this.context.createGainNode();
+    this.convolverGain.gain.value = 0.3;
+
     this.node.connect(this.analyzer);
-	this.analyzer.connect(this.compressor);
+    this.analyzer.connect(this.compressor);
 
     this.node.connect(this.convolver);
-	this.convolver.connect(this.convolverGain);
-	this.convolverGain.connect(this.compressor);
-	
-	this.compressor.connect(this.context.destination);
-	
+    this.convolver.connect(this.convolverGain);
+    this.convolverGain.connect(this.compressor);
+
+    this.compressor.connect(this.context.destination);
+
     this.theFMTG.sampleRate = this.context.sampleRate;
 
     this.velocity = 1.0;
 
     this.voice = new VoiceParameters();
-	this.presetVoiceBank = new PresetVoiceBank();
+    this.presetVoiceBank = new PresetVoiceBank();
 
     this.programNo = 1;
-	this.presentedProgramNo = -1;
- 
+    this.presentedProgramNo = -1;
+
     this.FixedFreqBaseTable = new Array(100);
     var f = 1;
     for (var i = 0; i < 100; i++) {
@@ -77,25 +77,25 @@ Application.prototype.calcRatioFreq = function(coarse, fine) {
     if (ratio == 0) {
         ratio = 0.5;
     }
-        
+
     if (fine >= 1.0) {
-        fine = 0.99;    
+        fine = 0.99;
     }
     ratio += fine;
-        
+
     return ratio;
 }
-    
+
 Application.prototype.calcFixedFreq = function(coarse, fine) {
     var rate = Math.pow(10, Math.floor(coarse * 3));
     var base = Math.floor(fine * 100);
     if (base > 99) {
         base = 99;
     }
-            
+
     return this.FixedFreqBaseTable[base] * rate;
 }
-    
+
 Application.prototype.calcFreq = function(op) {
     var ratio;
     if (this.voice.fixed[op] == false) {
@@ -106,7 +106,7 @@ Application.prototype.calcFreq = function(op) {
 
     return ratio;
 }
-    
+
 Application.prototype.noteOn = function(noteNo, velocity) {
     // copy parameters to Tone Generator from UI
     for (var i = 0; i < 4; i++) {
@@ -155,8 +155,8 @@ Application.prototype.noteOff = function(noteNo) {
 }
 
 Application.prototype.updateView = function () {
-	var curOp = this.theAlgView.op;
-	this.theAlgView.setAlgorithm(this.voice.algorithm);
+    var curOp = this.theAlgView.op;
+    this.theAlgView.setAlgorithm(this.voice.algorithm);
 
     for (var i = 0; i < 4; i++) {
         var id = "#OP" + (i + 1) + "_text";
@@ -166,7 +166,7 @@ Application.prototype.updateView = function () {
             $(id).css("color", "white");
         }
 
-   		this.theEGView[i].setEGpos(this.voice.EGpos[i]);
+           this.theEGView[i].setEGpos(this.voice.EGpos[i]);
     }
 
     if (this.voice.egloop[curOp] == true) {
@@ -174,7 +174,7 @@ Application.prototype.updateView = function () {
     } else {
         $("#led_egloop").fadeOut('fast');
     }
-            
+
     if (this.voice.velsens[curOp] == true) {
         $("#led_velsens").show();
         this.theEGView[curOp].setHeightScale(p.velocity);
@@ -182,7 +182,7 @@ Application.prototype.updateView = function () {
         $("#led_velsens").fadeOut('fast');
         this.theEGView[curOp].setHeightScale(1.0);
     }
-            
+
     if (this.voice.fixed[this.theAlgView.op] == false) {
         $("#led_ratio").show();
         $("#led_fixed").fadeOut('fast');
@@ -190,28 +190,28 @@ Application.prototype.updateView = function () {
         $("#led_ratio").fadeOut('fast');
         $("#led_fixed").show();
     }
-            
+
     $("#curOP").html(curOp + 1);
 
     this.theFaderView_coarse.setValue(this.voice.coarse[curOp]);
     this.theFaderView_fine.setValue(this.voice.fine[curOp]);
-        
-    var ratio = this.calcFreq(curOp);
-    $("#ratio").html("%.2f".sprintf(ratio));            
 
-	this.theFaderView_feedback.setValue(this.voice.feedback);
+    var ratio = this.calcFreq(curOp);
+    $("#ratio").html("%.2f".sprintf(ratio));
+
+    this.theFaderView_feedback.setValue(this.voice.feedback);
     $("#feedback").html("%.2f".sprintf(this.voice.feedback));
 
-	this.theFaderView_velocity.setValue(this.velocity);
-	
+    this.theFaderView_velocity.setValue(this.velocity);
+
     $("#VoiceName").html(this.voice.name);
 
-	if (this.programNo != this.presentedProgramNo) {
-	    var digit1 = this.programNo % 10;
-		var digit2 = Math.floor(this.programNo / 10);
-	    $("#ProgramNo").html("<img src=\"images/LED_No" + digit2 + ".png\"><img src=\"images/LED_No" + digit1 + ".png\">");
-		this.presentedProgramNo = this.programNo;
-	}
+    if (this.programNo != this.presentedProgramNo) {
+        var digit1 = this.programNo % 10;
+        var digit2 = Math.floor(this.programNo / 10);
+        $("#ProgramNo").html("<img src=\"images/LED_No" + digit2 + ".png\"><img src=\"images/LED_No" + digit1 + ".png\">");
+        this.presentedProgramNo = this.programNo;
+    }
 }
 
 Application.prototype.onload = function() {
@@ -221,7 +221,7 @@ Application.prototype.onload = function() {
         self.voice.algorithm = algNo;
     }
     this.theAlgView.onChangeOperator = function(opNo) {
-    	self.updateView();
+        self.updateView();
     }
 
     for (var i = 0; i < 4; i++) {
@@ -231,9 +231,9 @@ Application.prototype.onload = function() {
         this.theEGView[i].onMouseDown = function (opNo) {
             self.theAlgView.setOperator(opNo);
         };
-		this.theEGView[i].onUpdateEGpos = function (opNo, EGpos) {
-			self.voice.EGpos[opNo] = EGpos;
-		};
+        this.theEGView[i].onUpdateEGpos = function (opNo, EGpos) {
+            self.voice.EGpos[opNo] = EGpos;
+        };
 
         this.theFMTG.eg[i].EGView = this.theEGView[i];
     }
@@ -251,14 +251,14 @@ Application.prototype.onload = function() {
         var op = self.theAlgView.op;
         self.voice.fine[op] = value;
 
-		self.updateView();
+        self.updateView();
     }
 
     this.theFaderView_feedback = new FaderView(document.getElementById('knob_feedback'), 100);
     this.theFaderView_feedback.onUpdateValue = function(value) {
         self.voice.feedback = value;
 
-		self.updateView();
+        self.updateView();
     }
 
     this.theFaderView_velocity = new FaderView(document.getElementById('knob_velocity'), 72);
@@ -270,10 +270,10 @@ Application.prototype.onload = function() {
             }
         }
     }
-    
+
     this.theSpectrumView = new SpectrumView(document.getElementById('canvas_SPECTRUM'));
     this.theSpectrumView.fftSize = this.analyzer.frequencyBinCount;
-        
+
     var self = this;
     this.theSpectrumView.feedFrequencyData = function (data) {
         self.analyzer.getByteFrequencyData(data);
@@ -282,7 +282,7 @@ Application.prototype.onload = function() {
     this.theSpectrumView.animationLoop();
 
     if (this.isUserVoiceAvailable()) {
-    	this.programNo = 0;
+        this.programNo = 0;
     }
 
     this.recallPresetVoice(this.programNo);
@@ -290,33 +290,33 @@ Application.prototype.onload = function() {
 }
 
 Application.prototype.recallPresetVoice = function(no) {
-	if (no == 0 && this.isUserVoiceAvailable()) {
-		this.voice.recallVoiceParam(location.href);
-	} else if (1 <= no && no <= this.presetVoiceBank.numOfPresets()) {
-    	this.voice.recallVoiceParam(this.presetVoiceBank.presetVoiceURL(no - 1));
-	}
+    if (no == 0 && this.isUserVoiceAvailable()) {
+        this.voice.recallVoiceParam(location.href);
+    } else if (1 <= no && no <= this.presetVoiceBank.numOfPresets()) {
+        this.voice.recallVoiceParam(this.presetVoiceBank.presetVoiceURL(no - 1));
+    }
 
     this.updateView();
 }
 
 Application.prototype.isUserVoiceAvailable = function() {
-	var param = new parseUri(location.href);
-	if (param.queryKey['v']) {
-		return true;
-	}
+    var param = new parseUri(location.href);
+    if (param.queryKey['v']) {
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
 var paramURL = "";
 function share()
 {
-	var locationArray = location.href.split('?');
-	paramURL = locationArray[0] + "?" + p.voice.stringParameter();
+    var locationArray = location.href.split('?');
+    paramURL = locationArray[0] + "?" + p.voice.stringParameter();
 
-	var login  = 'takmiz';
+    var login  = 'takmiz';
     var apiKey = 'R_1d20bba381cee9ec2773585c09ed0d8a';
-    bitly = 'http://api.bit.ly/shorten' 
+    bitly = 'http://api.bit.ly/shorten'
         + '?version=2.0.1&format=json&callback=bitlyCallback'
         + '&login=' + login
         + '&apiKey=' + apiKey + '&longUrl=';
@@ -328,12 +328,12 @@ function share()
 
 function bitlyCallback(bitlyResponse)
 {
-	var title = '';
+    var title = '';
     var url = 'http://twitter.com/share?text='
-    	+ encodeURIComponent('"' + p.voice.name + '" made with Web FM synthesizer')
-    	+ '&hashtags=webfmsynth&url='
+        + encodeURIComponent('"' + p.voice.name + '" made with Web FM synthesizer')
+        + '&hashtags=webfmsynth&url='
         + encodeURIComponent(bitlyResponse.results[paramURL]['shortUrl']);
-          
+
     location.href = url;
 }
 
@@ -428,28 +428,28 @@ onload = function() {
         var op = p.theAlgView.op;
         p.voice.egloop[op] = !p.voice.egloop[op];
 
-		p.updateView();
+        p.updateView();
     });
 
     $("#button_velsens").mousedown(function(e) {
         var op = p.theAlgView.op;
         p.voice.velsens[op] = !p.voice.velsens[op];
-        
+
         p.updateView();
     });
 
     $("#button_ratio").mousedown(function(e) {
         var op = p.theAlgView.op;
         p.voice.fixed[op] = false;
-        
+
         p.updateView();
     });
-    
+
     $("#button_fixed").mousedown(function(e) {
         var op = p.theAlgView.op;
         p.voice.fixed[op] = true;
 
-    	p.updateView();
+        p.updateView();
     });
 
     $("#button_edit").mousedown(function(e) {
@@ -473,46 +473,46 @@ onload = function() {
     });
 
     $("#button_progUp").mousedown(function(e) {
-		var minProgramNo = 1;
-		if (p.isUserVoiceAvailable()) {
-			minProgramNo = 0;
-		}
+        var minProgramNo = 1;
+        if (p.isUserVoiceAvailable()) {
+            minProgramNo = 0;
+        }
 
-		if (p.programNo > minProgramNo) {
-       		p.programNo--;
-       	}
-       	p.recallPresetVoice(p.programNo);
+        if (p.programNo > minProgramNo) {
+               p.programNo--;
+           }
+           p.recallPresetVoice(p.programNo);
     });
 
     $("#button_progDown").mousedown(function(e) {
-		if (p.programNo < p.presetVoiceBank.numOfPresets()) {
-       		p.programNo++;
-       	}
-       	p.recallPresetVoice(p.programNo);
+        if (p.programNo < p.presetVoiceBank.numOfPresets()) {
+               p.programNo++;
+           }
+           p.recallPresetVoice(p.programNo);
     });
-    
+
     $("#VoiceName").click(function(e) {
-    	$("#VoiceNameEdit").val(p.voice.name).show().focus();
+        $("#VoiceNameEdit").val(p.voice.name).show().focus();
     });
-    
+
     $("#VoiceNameEdit").keypress(function(e) {
-    	if (e.keyCode && e.keyCode == 13) {
-    		p.voice.name = $("#VoiceNameEdit").val();
-	    	p.updateView();
-    		$("#VoiceNameEdit").hide();
-    	}
+        if (e.keyCode && e.keyCode == 13) {
+            p.voice.name = $("#VoiceNameEdit").val();
+            p.updateView();
+            $("#VoiceNameEdit").hide();
+        }
     });
 
     $("#VoiceNameEdit").blur(function(e) {
-		p.voice.name = $("#VoiceNameEdit").val();
-    	p.updateView();
-		$("#VoiceNameEdit").hide();
+        p.voice.name = $("#VoiceNameEdit").val();
+        p.updateView();
+        $("#VoiceNameEdit").hide();
     });
-        
+
     if (typeof(webkitAudioContext) == "undefined") {
-    	$("#webaudioalert").show();
+        $("#webaudioalert").show();
     }
-    
+
     p.onload();
 }
 

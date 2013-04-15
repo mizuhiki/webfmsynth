@@ -69,8 +69,8 @@ var OpConnection = [
         [  0,  0,  0,  0 ], // OP4
         [  0.25,  0.25,  0.25,  0.25 ], // carrier
     ],
-];    
-        
+];
+
 
 var AlgPos = [
     [
@@ -170,48 +170,48 @@ AlgView.prototype = {
                 }
             }
         }
-        
+
         var min_x = canvas.width;
         var max_x = 0;
         var max_y = 0;
-        
+
         for (var i = 0; i < 4; i++) {
             if (OpConnection[this.alg][4][i] > 0) {
                 var x = AlgPos[this.alg][i].x * canvas.width;
                 var y = AlgPos[this.alg][i].y * canvas.height;
-                
+
                 ctx.moveTo(x, y);
                 ctx.lineTo(x, y + 15);
-                
+
                 if (min_x > x) {
                     min_x = x;
                 }
-                
+
                 if (max_x < x) {
                     max_x = x;
                 }
-                
+
                 if (max_y < y + 15) {
                     max_y = y + 15;
                 }
             }
         }
-        
+
         ctx.moveTo(min_x, max_y);
         ctx.lineTo(max_x, max_y);
-        
+
         var center_x = (min_x + max_x) / 2;
         ctx.moveTo(center_x, max_y);
         ctx.lineTo(center_x, max_y + 5);
 
-		// feedback
-		var op1x = AlgPos[this.alg][3].x * canvas.width;
-		var op1y = AlgPos[this.alg][3].y * canvas.height;
-		ctx.moveTo(op1x     , op1y     );
-		ctx.lineTo(op1x + 15, op1y     );
-		ctx.lineTo(op1x + 15, op1y - 15);
-		ctx.lineTo(op1x     , op1y - 15);
-		ctx.lineTo(op1x     , op1y     )
+        // feedback
+        var op1x = AlgPos[this.alg][3].x * canvas.width;
+        var op1y = AlgPos[this.alg][3].y * canvas.height;
+        ctx.moveTo(op1x     , op1y     );
+        ctx.lineTo(op1x + 15, op1y     );
+        ctx.lineTo(op1x + 15, op1y - 15);
+        ctx.lineTo(op1x     , op1y - 15);
+        ctx.lineTo(op1x     , op1y     )
 
         ctx.lineWidth = 1.0;
         ctx.stroke();
@@ -223,7 +223,7 @@ AlgView.prototype = {
             } else {
                 ctx.fillStyle = "rgb(255, 255, 255)";
             }
-        
+
             ctx.beginPath();
             ctx.rect(AlgPos[this.alg][i].x * canvas.width - 10, AlgPos[this.alg][i].y * canvas.height - 10, 20, 20);
             ctx.fill();
@@ -232,18 +232,18 @@ AlgView.prototype = {
         ctx.font = "15px Arial";
         ctx.fillStyle = "rgb(0, 0, 0)";
         ctx.beginPath();
-        
+
         for (var i = 0; i < 4; i++) {
             ctx.fillText(i + 1, AlgPos[this.alg][i].x * canvas.width - 4, AlgPos[this.alg][i].y * canvas.height + 6);
         }
-        
+
         ctx.fill();
     },
 
     mouseUpListener : function(e) {
         var rect = e.target.getBoundingClientRect();
         var canvas = e.target;
-        
+
         var mouseX = e.clientX - rect.left;
         var mouseY = e.clientY - rect.top;
 

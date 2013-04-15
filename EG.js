@@ -4,7 +4,7 @@ var EGPhase = {
     Decay   : 2,
     Sustain : 3,
     Release : 4,
-    Dump	: 5
+    Dump    : 5
 }
 
 var EG = function() {
@@ -22,25 +22,26 @@ var EG = function() {
 }
 
 EG.prototype.note_on = function() {
-	if (this.state != EGPhase.Stop) {
-		this.state = EGPhase.Dump;
-		this.curEGseg_length = 128;
-		this.curEGseg_step = -1 * this.amp / this.curEGseg_length;
-	} else {
-	    this.amp = 0.0;
-    	this.state = EGPhase.Attack;
-	    this.curEGseg_step = this.EGseg_step[0];
-    	this.curEGseg_length = this.EGseg_length[0];
-	    this.EGView.draw(0);
+    if (this.state != EGPhase.Stop) {
+        this.state = EGPhase.Dump;
+        this.curEGseg_length = 128;
+        this.curEGseg_step = -1 * this.amp / this.curEGseg_length;
+    } else {
+        this.amp = 0.0;
+        this.state = EGPhase.Attack;
+        this.curEGseg_step = this.EGseg_step[0];
+        this.curEGseg_length = this.EGseg_length[0];
+        this.EGView.draw(0);
     }
 }
 
 EG.prototype.note_off = function() {
-    this.state = EGPhase.Release;
-    this.curEGseg_step = -1 * this.amp / this.EGseg_length[2];
-    this.curEGseg_length = this.EGseg_length[2];
-
-    this.EGView.draw(3);
+    if (this.state != EGPhase.Stop) {
+        this.state = EGPhase.Release;
+        this.curEGseg_step = -1 * this.amp / this.EGseg_length[2];
+        this.curEGseg_length = this.EGseg_length[2];
+        this.EGView.draw(3);
+    }
 };
 
 EG.prototype.next = function() {
@@ -50,20 +51,20 @@ EG.prototype.next = function() {
 
     this.amp += this.curEGseg_step;
     if (this.amp > 1.0) {
-    	this.amp = 1.0;
+        this.amp = 1.0;
     }
     this.curEGseg_length--;
 
     if (this.curEGseg_length <= 0) {
         switch (this.state) {
-    	case EGPhase.Dump:
-    		this.state = EGPhase.Attack;
-		    this.curEGseg_step = this.EGseg_step[0];
-    		this.curEGseg_length = this.EGseg_length[0];
-    		this.amp = 0.0;
+        case EGPhase.Dump:
+            this.state = EGPhase.Attack;
+            this.curEGseg_step = this.EGseg_step[0];
+            this.curEGseg_length = this.EGseg_length[0];
+            this.amp = 0.0;
             this.EGView.draw(0);
-			break;
-    		
+            break;
+
         case EGPhase.Attack:
             this.state = EGPhase.Decay;
             this.curEGseg_step = this.EGseg_step[1];

@@ -4,7 +4,7 @@ var SpectrumView = function(canvas)
     this.ctx = canvas.getContext('2d');
     this.fftSize;
     this.feedFrequencyData = function (data) {};
-    
+
     window.requestAnimationFrame = (function(){
         return window.requestAnimationFrame     ||
             window.webkitRequestAnimationFrame  ||
@@ -33,7 +33,7 @@ SpectrumView.prototype = {
             value = 1.0 - (parseInt(data[i]) / 256);
             ctx.moveTo(i, ele.height);
             ctx.lineTo(i, value * ele.height);
-        }        
+        }
         ctx.closePath();
         ctx.stroke();
     },
@@ -42,7 +42,7 @@ SpectrumView.prototype = {
         var data = new Uint8Array(this.fftSize);
         this.feedFrequencyData(data);
         this.render(this.canvas, this.ctx, data);
-        
+
         var self = this;
         requestAnimationFrame(function () { self.animationLoop() });
     },

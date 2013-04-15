@@ -11,7 +11,7 @@ var FMToneGenerator = function() {
     this.velsens = new Array(4);
     this.velocity = 0.0;
     this.feedback = 0.0;
-	this.oversampling = 2;
+    this.oversampling = 2;
 
     for (var i = 0; i < 4; i++) {
         this.phaseIncrement[i] = 0.0;
@@ -26,40 +26,40 @@ var FMToneGenerator = function() {
 FMToneGenerator.prototype.generateAudio = function(e) {
     var left  = e.outputBuffer.getChannelData(0);
     var right = e.outputBuffer.getChannelData(1);
-    
+
     var numSamples = right.length;
     for (var i = 0; i < numSamples; i++) {
-        main_output = 0;        
-    	for (var os = 0; os < this.oversampling; os++) {
-	        for (var op = 3; op >= 0; op--) {
-    	        var mod_output = 0;
-        	    for (var op_mod = 0; op_mod < 4; op_mod++) {
-	                mod_output += this.algorithm[op][op_mod] * this.output[op_mod];
-	            }
-            
-	            mod_output *= 10;
+        main_output = 0;
+        for (var os = 0; os < this.oversampling; os++) {
+            for (var op = 3; op >= 0; op--) {
+                var mod_output = 0;
+                for (var op_mod = 0; op_mod < 4; op_mod++) {
+                    mod_output += this.algorithm[op][op_mod] * this.output[op_mod];
+                }
 
-	            if (op == 3) {
-                	mod_output += this.output[op] * this.feedback * 3;
-	            }
-            
-            	this.output[op] = Math.sin(this.phase[op] + mod_output) * this.eg[op].amp * this.eg[op].amp;
-	            if (this.velsens[op] == true) {
-	                this.output[op] *= this.velocity;
-            	}
+                mod_output *= 10;
 
-            	this.phase[op] += this.phaseIncrement[op];
-            
-            
-            	main_output += this.output[op] * this.algorithm[4][op] / this.oversampling;
-	        }
-     	}
- 
+                if (op == 3) {
+                    mod_output += this.output[op] * this.feedback * 3;
+                }
+
+                this.output[op] = Math.sin(this.phase[op] + mod_output) * this.eg[op].amp * this.eg[op].amp;
+                if (this.velsens[op] == true) {
+                    this.output[op] *= this.velocity;
+                }
+
+                this.phase[op] += this.phaseIncrement[op];
+
+
+                main_output += this.output[op] * this.algorithm[4][op] / this.oversampling;
+            }
+         }
+
         right[i] = left[i] = main_output;
 
-		for (var op = 0; op < 4; op++) {
+        for (var op = 0; op < 4; op++) {
             this.eg[op].next();
-		}
+        }
     }
 }
 
@@ -80,7 +80,7 @@ FMToneGenerator.prototype.noteOn = function(noteNo, velocity) {
         this.phase[i] = 0.0;
         this.output[i] = 0.0;
     }
-    
+
     for (var i = 0; i < 4; i++) {
         this.eg[i].note_on();
     }
