@@ -132,13 +132,13 @@ var AlgView = function(canvas)
     this.ctx = canvas.getContext('2d');
 
     var _this = this;
-    this.canvas.addEventListener("mouseup", function(event) { _this.mouseUpListener(event) }, false);
+    this.canvas.addEventListener("mouseup", function(event) { _this.mouseUpListener(event); }, false);
 
     this.onChangeAlgorithm = function(algNo) {};
     this.onChangeOperator = function(opNo) {};
 
     this.draw();
-}
+};
 
 AlgView.prototype = {
     setOperator : function(op) {
@@ -274,4 +274,5 @@ AlgView.prototype = {
 
         this.draw();
     }
-}
+};
+

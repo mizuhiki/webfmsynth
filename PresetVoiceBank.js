@@ -14,8 +14,9 @@ function PresetVoiceBank() {
 
 PresetVoiceBank.prototype.presetVoiceURL = function(presetNo) {
     return "http://dummy/" + this.preset[presetNo];
-}
+};
 
 PresetVoiceBank.prototype.numOfPresets = function() {
     return this.preset.length;
-}
+};
+

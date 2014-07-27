@@ -5,7 +5,7 @@ var EGPhase = {
     Sustain : 3,
     Release : 4,
     Dump    : 5
-}
+};
 
 var EG = function() {
     this.amp = 0.0;
@@ -19,7 +19,7 @@ var EG = function() {
     this.EGseg_length = new Array(3);
 
     this.EGView = null;
-}
+};
 
 EG.prototype.note_on = function() {
     if (this.state != EGPhase.Stop) {
@@ -33,7 +33,7 @@ EG.prototype.note_on = function() {
         this.curEGseg_length = this.EGseg_length[0];
         this.EGView.draw(0);
     }
-}
+};
 
 EG.prototype.note_off = function() {
     if (this.state != EGPhase.Stop) {
@@ -94,4 +94,5 @@ EG.prototype.next = function() {
             break;
         }
     }
-}
+};
+

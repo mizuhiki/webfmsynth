@@ -1,5 +1,5 @@
 var Application = function() {
-    this.theFMTG = new FMToneGenerator();
+	this.theFMTG = new FMToneGenerator();
     this.theFMTG.changeAlgorithm(0);
     this.theEGView = new Array(4);
     this.theAlgView = 0;
@@ -16,8 +16,8 @@ var Application = function() {
     //const NUM_INPUTS = 0; // Results in horrible noise in Safari 6
     const NUM_INPUTS = 1; // Works properly in Safari 6
 
-    this.context = new webkitAudioContext();
-    this.node = this.context.createJavaScriptNode(BUFFER_SIZE, NUM_INPUTS, NUM_OUTPUTS);
+    this.context = new AudioContext();
+    this.node = this.context.createScriptProcessor(BUFFER_SIZE, NUM_INPUTS, NUM_OUTPUTS);
 
     this.analyzer = this.context.createAnalyser();
     this.analyzer.fftSize = 256;
@@ -30,13 +30,13 @@ var Application = function() {
     request.onload = function() {
         _this.context.decodeAudioData(request.response, function(buffer) {
             _this.convolver.buffer = buffer;
-        })
-    }
+        });
+    };
     request.send();
 
     this.compressor = this.context.createDynamicsCompressor();
 
-    this.convolverGain = this.context.createGainNode();
+    this.convolverGain = this.context.createGain();
     this.convolverGain.gain.value = 0.3;
 
     this.node.connect(this.analyzer);
@@ -70,7 +70,7 @@ var Application = function() {
     this.node.onaudioprocess = function(e) {
         self.theFMTG.generateAudio(e);
     };
-}
+};
 
 Application.prototype.calcRatioFreq = function(coarse, fine) {
     var ratio = Math.ceil(coarse * 13);
@@ -84,7 +84,7 @@ Application.prototype.calcRatioFreq = function(coarse, fine) {
     ratio += fine;
 
     return ratio;
-}
+};
 
 Application.prototype.calcFixedFreq = function(coarse, fine) {
     var rate = Math.pow(10, Math.floor(coarse * 3));
@@ -94,7 +94,7 @@ Application.prototype.calcFixedFreq = function(coarse, fine) {
     }
 
     return this.FixedFreqBaseTable[base] * rate;
-}
+};
 
 Application.prototype.calcFreq = function(op) {
     var ratio;
@@ -105,7 +105,7 @@ Application.prototype.calcFreq = function(op) {
     }
 
     return ratio;
-}
+};
 
 Application.prototype.noteOn = function(noteNo, velocity) {
     // copy parameters to Tone Generator from UI
@@ -148,11 +148,11 @@ Application.prototype.noteOn = function(noteNo, velocity) {
     this.theFMTG.changeAlgorithm(this.voice.algorithm);
 
     this.theFMTG.noteOn(noteNo, velocity);
-}
+};
 
 Application.prototype.noteOff = function(noteNo) {
     this.theFMTG.noteOff(noteNo);
-}
+};
 
 Application.prototype.updateView = function () {
     var curOp = this.theAlgView.op;
@@ -212,17 +212,17 @@ Application.prototype.updateView = function () {
         $("#ProgramNo").html("<img src=\"images/LED_No" + digit2 + ".png\"><img src=\"images/LED_No" + digit1 + ".png\">");
         this.presentedProgramNo = this.programNo;
     }
-}
+};
 
 Application.prototype.onload = function() {
     var self = this;
     this.theAlgView = new AlgView(document.getElementById('canvas_ALG'));
     this.theAlgView.onChangeAlgorithm = function(algNo) {
         self.voice.algorithm = algNo;
-    }
+    };
     this.theAlgView.onChangeOperator = function(opNo) {
         self.updateView();
-    }
+    };
 
     for (var i = 0; i < 4; i++) {
         var id = "#OP" + (i + 1) + " canvas";
@@ -244,7 +244,7 @@ Application.prototype.onload = function() {
         self.voice.coarse[op] = value;
 
         self.updateView();
-    }
+    };
 
     this.theFaderView_fine = new FaderView(document.getElementById('knob_fine'), 100);
     this.theFaderView_fine.onUpdateValue = function(value) {
@@ -252,14 +252,14 @@ Application.prototype.onload = function() {
         self.voice.fine[op] = value;
 
         self.updateView();
-    }
+    };
 
     this.theFaderView_feedback = new FaderView(document.getElementById('knob_feedback'), 100);
     this.theFaderView_feedback.onUpdateValue = function(value) {
         self.voice.feedback = value;
 
         self.updateView();
-    }
+    };
 
     this.theFaderView_velocity = new FaderView(document.getElementById('knob_velocity'), 72);
     this.theFaderView_velocity.onUpdateValue = function(value) {
@@ -269,7 +269,7 @@ Application.prototype.onload = function() {
                 self.theEGView[i].setHeightScale(value);
             }
         }
-    }
+    };
 
     this.theSpectrumView = new SpectrumView(document.getElementById('canvas_SPECTRUM'));
     this.theSpectrumView.fftSize = this.analyzer.frequencyBinCount;
@@ -277,7 +277,7 @@ Application.prototype.onload = function() {
     var self = this;
     this.theSpectrumView.feedFrequencyData = function (data) {
         self.analyzer.getByteFrequencyData(data);
-    }
+    };
 
     this.theSpectrumView.animationLoop();
 
@@ -287,7 +287,7 @@ Application.prototype.onload = function() {
 
     this.recallPresetVoice(this.programNo);
     this.updateView();
-}
+};
 
 Application.prototype.recallPresetVoice = function(no) {
     if (no == 0 && this.isUserVoiceAvailable()) {
@@ -297,7 +297,7 @@ Application.prototype.recallPresetVoice = function(no) {
     }
 
     this.updateView();
-}
+};
 
 Application.prototype.isUserVoiceAvailable = function() {
     var param = new parseUri(location.href);
@@ -306,7 +306,7 @@ Application.prototype.isUserVoiceAvailable = function() {
     }
 
     return false;
-}
+};
 
 var paramURL = "";
 function share()
@@ -509,12 +509,12 @@ onload = function() {
         $("#VoiceNameEdit").hide();
     });
 
-    if (typeof(webkitAudioContext) == "undefined") {
+    if (typeof(window.AudioContext) == "undefined") {
         $("#webaudioalert").show();
     }
 
     p.onload();
-}
+};
 
-
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var p = new Application();

@@ -42,7 +42,7 @@ VoiceParameters.prototype.stringParameter = function() {
     string += "n="  + this.name;
 
     return string;
-}
+};
 
 VoiceParameters.prototype.recallVoiceParam = function(uri) {
     // URI からパラメータを復元する
@@ -102,4 +102,5 @@ VoiceParameters.prototype.recallVoiceParam = function(uri) {
     } else {
         this.name = "";
     }
-}
+};
+

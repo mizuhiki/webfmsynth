@@ -17,10 +17,10 @@ var EGView = function(canvas)
     this.dragSegIdx = -1;
 
     var _this = this;
-    canvas.addEventListener("mousedown", function (event) { _this.mouseDownListener(event) }, false);
-    canvas.addEventListener("mousemove", function (event) { _this.mouseMoveListener(event) }, false);
-    canvas.addEventListener("mouseup",   function (event) { _this.mouseUpListener(event) },   false);
-    canvas.addEventListener("mouseout",  function (event) { _this.mouseUpListener(event) },   false);
+    canvas.addEventListener("mousedown", function (event) { _this.mouseDownListener(event); }, false);
+    canvas.addEventListener("mousemove", function (event) { _this.mouseMoveListener(event); }, false);
+    canvas.addEventListener("mouseup",   function (event) { _this.mouseUpListener(event); },   false);
+    canvas.addEventListener("mouseout",  function (event) { _this.mouseUpListener(event); },   false);
 
     this.onMouseDown = 0;
     this.onUpdateEGpos = 0;
@@ -29,7 +29,7 @@ var EGView = function(canvas)
     this.heightScale = 1.0;
 
     this.draw(-1);
-}
+};
 
 EGView.prototype = {
     setEGpos : function (EGpos) {
@@ -202,6 +202,6 @@ EGView.prototype = {
         this.onUpdateEGpos(this.opNo, this.EGpos);
     }
 
-}
+};
 
 

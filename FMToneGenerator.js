@@ -21,7 +21,7 @@ var FMToneGenerator = function() {
         this.eg[i] = new EG();
         this.velsens[i] = false;
     }
-}
+};
 
 FMToneGenerator.prototype.generateAudio = function(e) {
     var left  = e.outputBuffer.getChannelData(0);
@@ -61,7 +61,7 @@ FMToneGenerator.prototype.generateAudio = function(e) {
             this.eg[op].next();
         }
     }
-}
+};
 
 FMToneGenerator.prototype.noteOn = function(noteNo, velocity) {
     var self = this;
@@ -84,14 +84,15 @@ FMToneGenerator.prototype.noteOn = function(noteNo, velocity) {
     for (var i = 0; i < 4; i++) {
         this.eg[i].note_on();
     }
-}
+};
 
 FMToneGenerator.prototype.noteOff = function(noteNo) {
     for (var i = 0; i < 4; i++) {
         this.eg[i].note_off();
     }
-}
+};
 
 FMToneGenerator.prototype.changeAlgorithm = function(algNo) {
     this.algorithm = OpConnection[algNo];
-}
+};
+

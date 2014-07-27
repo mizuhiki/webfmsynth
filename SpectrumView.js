@@ -15,7 +15,7 @@ var SpectrumView = function(canvas)
                 window.setTimeout(callback, 1000 / 60);
             };
         })();
-}
+};
 
 SpectrumView.prototype = {
     /**
@@ -46,4 +46,5 @@ SpectrumView.prototype = {
         var self = this;
         requestAnimationFrame(function () { self.animationLoop() });
     },
-}
+};
+

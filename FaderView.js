@@ -2,9 +2,9 @@ var FaderView = function(elementToDrag, height) {
     this.elementToDrag = elementToDrag;
 
     var _this = this;
-    this.elementToDrag.addEventListener("mousedown", function(event) { _this.downHandler(event) }, false);
-    document.addEventListener("mousemove", function(event) { _this.moveHandler(event) }, false);
-    document.addEventListener("mouseup", function(event) { _this.upHandler(event) }, false);
+    this.elementToDrag.addEventListener("mousedown", function(event) { _this.downHandler(event); }, false);
+    document.addEventListener("mousemove", function(event) { _this.moveHandler(event); }, false);
+    document.addEventListener("mouseup", function(event) { _this.upHandler(event); }, false);
 
     this.deltaY = 0;
     this.topY = elementToDrag.offsetTop - height;
@@ -14,7 +14,7 @@ var FaderView = function(elementToDrag, height) {
     this.value = 0;
 
     this.isDragged = false;
-}
+};
 
 FaderView.prototype = {
     setValue : function(value) {
@@ -59,4 +59,5 @@ FaderView.prototype = {
 
         this.isDragged = false;
     }
-}
+};
+
