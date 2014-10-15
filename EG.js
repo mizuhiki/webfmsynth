@@ -18,7 +18,9 @@ var EG = function() {
     this.EGseg_step = new Array(3);
     this.EGseg_length = new Array(3);
 
-    this.EGView = null;
+    this.onUpdateSegment = null;
+    
+    this.onEGStopped = null;
 };
 
 EG.prototype.note_on = function() {
@@ -31,7 +33,7 @@ EG.prototype.note_on = function() {
         this.state = EGPhase.Attack;
         this.curEGseg_step = this.EGseg_step[0];
         this.curEGseg_length = this.EGseg_length[0];
-        this.EGView.draw(0);
+        this.onUpdateSegment(0);
     }
 };
 
@@ -40,7 +42,7 @@ EG.prototype.note_off = function() {
         this.state = EGPhase.Release;
         this.curEGseg_step = -1 * this.amp / this.EGseg_length[2];
         this.curEGseg_length = this.EGseg_length[2];
-        this.EGView.draw(3);
+        this.onUpdateSegment(3);
     }
 };
 
@@ -62,14 +64,14 @@ EG.prototype.next = function() {
             this.curEGseg_step = this.EGseg_step[0];
             this.curEGseg_length = this.EGseg_length[0];
             this.amp = 0.0;
-            this.EGView.draw(0);
+	        this.onUpdateSegment(0);
             break;
 
         case EGPhase.Attack:
             this.state = EGPhase.Decay;
             this.curEGseg_step = this.EGseg_step[1];
             this.curEGseg_length = this.EGseg_length[1];
-            this.EGView.draw(1);
+	        this.onUpdateSegment(1);
             break;
 
         case EGPhase.Decay:
@@ -77,20 +79,23 @@ EG.prototype.next = function() {
                 this.state = EGPhase.Sustain;
                 this.curEGseg_step = 0.0;
                 this.curEGseg_length = 0;
-                this.EGView.draw(2);
+		        this.onUpdateSegment(2);
             } else {
                 this.state = EGPhase.Attack;
                 this.curEGseg_step = this.EGseg_step[0];
                 this.curEGseg_length = this.EGseg_length[0];
                 this.amp = 0.0;
-                this.EGView.draw(0);
+		        this.onUpdateSegment(0);
             }
             break;
 
         case EGPhase.Release:
             this.state = EGPhase.Stop;
             this.amp = 0.0;
-            this.EGView.draw(-1);
+	        this.onUpdateSegment(-1);
+            if (this.onEGStopped != null) {
+            	this.onEGStopped();
+            }
             break;
         }
     }

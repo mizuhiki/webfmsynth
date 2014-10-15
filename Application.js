@@ -1,6 +1,12 @@
+var ChannelInfo = function() {
+	this.tg = null;
+	this.scriptProcessor = null;
+	this.noteNo = 0;
+};
+
 var Application = function() {
-	this.theFMTG = new FMToneGenerator();
-    this.theFMTG.changeAlgorithm(0);
+	this.channelTable = new Array();
+
     this.theEGView = new Array(4);
     this.theAlgView = 0;
     this.theFaderView_coarse = 0;
@@ -9,52 +15,23 @@ var Application = function() {
     this.theFaderView_velocity = 0;
     this.theSpectrumView = 0;
 
-    // Initialize Audio I/O
-    const BUFFER_SIZE = 2048;
-    const NUM_OUTPUTS = 2;
-
-    //const NUM_INPUTS = 0; // Results in horrible noise in Safari 6
-    const NUM_INPUTS = 1; // Works properly in Safari 6
-
     this.context = new AudioContext();
-    this.node = this.context.createScriptProcessor(BUFFER_SIZE, NUM_INPUTS, NUM_OUTPUTS);
 
     this.analyzer = this.context.createAnalyser();
     this.analyzer.fftSize = 256;
 
-    this.convolver = this.context.createConvolver();
-    var request = new XMLHttpRequest();
-    var _this = this;
-    request.open("GET", "DEP3_cheap.wav", true);
-    request.responseType = "arraybuffer";
-    request.onload = function() {
-        _this.context.decodeAudioData(request.response, function(buffer) {
-            _this.convolver.buffer = buffer;
-        });
-    };
-    request.send();
-
     this.compressor = this.context.createDynamicsCompressor();
 
-    this.convolverGain = this.context.createGain();
-    this.convolverGain.gain.value = 0.3;
-
-    this.node.connect(this.analyzer);
     this.analyzer.connect(this.compressor);
 
-    this.node.connect(this.convolver);
-    this.convolver.connect(this.convolverGain);
-    this.convolverGain.connect(this.compressor);
-
     this.compressor.connect(this.context.destination);
-
-    this.theFMTG.sampleRate = this.context.sampleRate;
 
     this.velocity = 1.0;
 
     this.voice = new VoiceParameters();
     this.presetVoiceBank = new PresetVoiceBank();
 
+	this.latestNoteNo = 0;
     this.programNo = 1;
     this.presentedProgramNo = -1;
 
@@ -64,12 +41,8 @@ var Application = function() {
         this.FixedFreqBaseTable[i] = f;
         f = Math.exp(Math.log(f) + 40 / (1200 / Math.log(2)));
     }
-
-
-    var self = this;
-    this.node.onaudioprocess = function(e) {
-        self.theFMTG.generateAudio(e);
-    };
+    
+	this.MIDIinputs = null;
 };
 
 Application.prototype.calcRatioFreq = function(coarse, fine) {
@@ -108,7 +81,29 @@ Application.prototype.calcFreq = function(op) {
 };
 
 Application.prototype.noteOn = function(noteNo, velocity) {
-    // copy parameters to Tone Generator from UI
+ 	var tg = new FMToneGenerator();
+    //this.theFMTG.changeAlgorithm(0);
+    tg.sampleRate = this.context.sampleRate;
+
+    // Initialize Audio I/O
+    const BUFFER_SIZE = 2048;
+    const NUM_OUTPUTS = 2;
+
+    //const NUM_INPUTS = 0; // Results in horrible noise in Safari 6
+    const NUM_INPUTS = 1; // Works properly in Safari 6
+
+    var scriptProcessor = this.context.createScriptProcessor(BUFFER_SIZE, NUM_INPUTS, NUM_OUTPUTS);
+    scriptProcessor.connect(this.analyzer);
+    scriptProcessor.onaudioprocess = function(e) {
+    	// var Time1 = performance.now();
+		
+		tg.generateAudio(e);
+		
+		// var Time2 = performance.now();
+    	// console.log(Math.floor((Time2 - Time1) * 1000) + "ns");
+    };
+
+	// copy parameters to Tone Generator from UI
     for (var i = 0; i < 4; i++) {
         const EG_TOTAL_TIME = 15 * this.context.sampleRate;
 
@@ -119,39 +114,72 @@ Application.prototype.noteOn = function(noteNo, velocity) {
         if (length == 0) {
             length = 1;
         }
-        this.theFMTG.eg[i].EGseg_length[0] = length;
-        this.theFMTG.eg[i].EGseg_step[0] = (1.0 - this.voice.EGpos[i][0].y) / length;
+        tg.eg[i].EGseg_length[0] = length;
+        tg.eg[i].EGseg_step[0] = (1.0 - this.voice.EGpos[i][0].y) / length;
 
         // Decay
         length = Math.pow(this.voice.EGpos[i][1].x - this.voice.EGpos[i][0].x, 2) * EG_TOTAL_TIME;
         if (length == 0) {
             length = 1;
         }
-        this.theFMTG.eg[i].EGseg_length[1] = length;
-        this.theFMTG.eg[i].EGseg_step[1] = -1 * (this.voice.EGpos[i][1].y - this.voice.EGpos[i][0].y) / length;
+        tg.eg[i].EGseg_length[1] = length;
+        tg.eg[i].EGseg_step[1] = -1 * (this.voice.EGpos[i][1].y - this.voice.EGpos[i][0].y) / length;
 
         // Release
         length = Math.pow(1.0 - this.voice.EGpos[i][2].x, 2) * EG_TOTAL_TIME;
         if (length == 0) {
             length = 1;
         }
-        this.theFMTG.eg[i].EGseg_length[2] = length;
-        this.theFMTG.eg[i].EGseg_step[2] = -1 * (1.0 - this.voice.EGpos[i][2].y) / length;
+        tg.eg[i].EGseg_length[2] = length;
+        tg.eg[i].EGseg_step[2] = -1 * (1.0 - this.voice.EGpos[i][2].y) / length;
 
-        this.theFMTG.freq[i] = this.calcFreq(i);
-        this.theFMTG.fixed[i] = this.voice.fixed[i];
-        this.theFMTG.velsens[i] = this.voice.velsens[i];
-        this.theFMTG.eg[i].loop = this.voice.egloop[i];
+        tg.freq[i] = this.calcFreq(i);
+        tg.fixed[i] = this.voice.fixed[i];
+        tg.velsens[i] = this.voice.velsens[i];
+        tg.eg[i].loop = this.voice.egloop[i];
+
+		(function() {
+			var _i = i;
+			var self = this;
+			tg.eg[_i].onUpdateSegment = function(segment) {
+				self.theEGView[_i].draw(segment);
+			};
+		}).bind(this)();
     }
 
-    this.theFMTG.feedback = this.voice.feedback;
-    this.theFMTG.changeAlgorithm(this.voice.algorithm);
+    tg.feedback = this.voice.feedback;
+    tg.changeAlgorithm(this.voice.algorithm);
 
-    this.theFMTG.noteOn(noteNo, velocity);
+    tg.noteOn(noteNo, velocity);
+	
+	var channelInfo = new ChannelInfo();
+	channelInfo.tg = tg;
+	channelInfo.scriptProcessor = scriptProcessor;
+	channelInfo.noteNo = noteNo;
+
+	this.channelTable.push(channelInfo);
 };
 
 Application.prototype.noteOff = function(noteNo) {
-    this.theFMTG.noteOff(noteNo);
+	var foundIndex = -1;
+	for (var i = 0; i < this.channelTable.length; i++) {
+		var info = this.channelTable[i];
+		if (info.noteNo == noteNo) {
+			foundIndex = i;
+			break;
+		}
+	}
+	
+	if (foundIndex != -1) {
+		var info = this.channelTable[foundIndex];
+		info.noteNo = -1;
+		info.tg.noteOff(noteNo);
+		info.tg.onAllEGStopped = function() {
+			info.scriptProcessor.disconnect();
+			var i = this.channelTable.indexOf(info);
+			this.channelTable.splice(i, 1);
+		}.bind(this);
+	}
 };
 
 Application.prototype.updateView = function () {
@@ -166,7 +194,7 @@ Application.prototype.updateView = function () {
             $(id).css("color", "white");
         }
 
-           this.theEGView[i].setEGpos(this.voice.EGpos[i]);
+        this.theEGView[i].setEGpos(this.voice.EGpos[i]);
     }
 
     if (this.voice.egloop[curOp] == true) {
@@ -234,8 +262,6 @@ Application.prototype.onload = function() {
         this.theEGView[i].onUpdateEGpos = function (opNo, EGpos) {
             self.voice.EGpos[opNo] = EGpos;
         };
-
-        this.theFMTG.eg[i].EGView = this.theEGView[i];
     }
 
     this.theFaderView_coarse = new FaderView(document.getElementById('knob_coarse'), 100 /* height */);
@@ -287,6 +313,30 @@ Application.prototype.onload = function() {
 
     this.recallPresetVoice(this.programNo);
     this.updateView();
+
+
+    // Setup MIDI I/O
+    if (window.navigator.requestMIDIAccess) {
+    	window.navigator.requestMIDIAccess().then( success, function() { alert("requestMIDIAccess() failed."); });
+    }
+
+    function success(access) {
+        var inputs = access.inputs();
+        for (var port = 0; port < inputs.length; port++) {
+            inputs[port].onmidimessage = function (event) {
+				var status = event.data[0] & 0xF0;
+				var noteNo = event.data[1];
+				var velocity = event.data[2];
+				if (status == 0x90) {
+					self.noteOn(noteNo, velocity / 127);
+				} else if (status == 0x80) {
+					self.noteOff(noteNo);
+				}
+			};
+        }
+
+        self.MIDIinputs = inputs;
+    }
 };
 
 Application.prototype.recallPresetVoice = function(no) {
@@ -399,25 +449,20 @@ onload = function() {
     }
 
     $("#keyboard").mousedown(function(e) {
-        var rect = e.target.getBoundingClientRect();
-        var mouseX1 = e.clientX - rect.left;
-        var mouseY1 = e.clientY - rect.top;
+        var mouseX1 = e.offsetX;
+        var mouseY1 = e.offsetY;
 
         var i = getNoteTableIndexFromPos(mouseX1, mouseY1);
         var noteNo = noteTable[i].noteNo;
 
         p.noteOn(noteNo, p.velocity);
+		this.latestNoteNo = noteNo;
 
         $("#keymask").css("left", noteTable[i].x).width(noteTable[i].w).height(noteTable[i].h).show();
     });
 
     $("#keyboard").mouseup(function(e) {
-        var rect = e.target.getBoundingClientRect();
-        var mouseX1 = e.clientX - rect.left;
-        var mouseY1 = e.clientY - rect.top;
-
-        var i = getNoteTableIndexFromPos(mouseX1, mouseY1);
-        var noteNo = noteTable[i].noteNo;
+        var noteNo = this.latestNoteNo;
 
         p.noteOff(noteNo);
 

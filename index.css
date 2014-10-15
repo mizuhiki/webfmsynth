@@ -51,22 +51,17 @@ body {
 	opacity: 0.9;
 }
 
-#share a:link {
-	color:#51A798;
-	font-weight: bold;
-	text-decoration:underline;
+.btn {
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    font-size: 13px;
+    display: block;
+    background: -moz-linear-gradient(top,#80CCE6,#80CCE6 5%,#09C 5%,#069 95%,#069 95%,#00293D);
+    background: -webkit-gradient(linear, left top, left bottom, from(#80CCE6), color-stop(0.05,#80CCE6), color-stop(0.05,#09C), color-stop(0.95,#069), color-stop(0.95,#00293D), to(#00293D));
+    border: 1px solid #DDD;
+    color: #FFFFFF;
+    width: 300px;
+    padding: 10px 0;
 }
-#share a:visited{
-	color:#fff;
-	text-decoration:underline;
-}
-#share a:hover{
-	color:#999;
-	text-decoration:none;
-}
-#share a:active{
-	color:#fff;
-	text-decoration:underline;
-}
-
 
