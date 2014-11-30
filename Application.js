@@ -321,7 +321,17 @@ Application.prototype.onload = function() {
     }
 
     function success(access) {
-        var inputs = access.inputs();
+    	var inputs;
+        if (typeof access.inputs === "function") {
+        	inputs = access.inputs();
+      	} else {
+      		var inputIterator = access.inputs.values();
+      		inputs = [];
+      		for (var o = inputIterator.next(); !o.done; o = inputIterator.next()) {
+      			inputs.push(o.value);
+      		}
+      	}
+        
         for (var port = 0; port < inputs.length; port++) {
             inputs[port].onmidimessage = function (event) {
 				var status = event.data[0] & 0xF0;
