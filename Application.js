@@ -31,7 +31,6 @@ var Application = function() {
     this.voice = new VoiceParameters();
     this.presetVoiceBank = new PresetVoiceBank();
 
-	this.latestNoteNo = 0;
     this.programNo = 1;
     this.presentedProgramNo = -1;
 
@@ -91,8 +90,13 @@ Application.prototype.noteOn = function(noteNo, velocity) {
 
     //const NUM_INPUTS = 0; // Results in horrible noise in Safari 6
     const NUM_INPUTS = 1; // Works properly in Safari 6
-
+ 
+	var bufferSource = this.context.createBufferSource();
     var scriptProcessor = this.context.createScriptProcessor(BUFFER_SIZE, NUM_INPUTS, NUM_OUTPUTS);
+
+	bufferSource.start(0);
+	bufferSource.connect(scriptProcessor);
+
     scriptProcessor.connect(this.analyzer);
     scriptProcessor.onaudioprocess = function(e) {
     	// var Time1 = performance.now();
@@ -444,6 +448,8 @@ onload = function() {
         new NoteTableItem(825, 0, 51, 188, 81),
         new NoteTableItem(876, 0, 51, 188, 83),
     ];
+    
+    var noteOnMap = [];
 
     function getNoteTableIndexFromPos(x, y) {
         var noteNo = 0;
@@ -466,18 +472,47 @@ onload = function() {
         var noteNo = noteTable[i].noteNo;
 
         p.noteOn(noteNo, p.velocity);
-		this.latestNoteNo = noteNo;
+		noteOnMap['mousedown'] = noteNo;
 
         $("#keymask").css("left", noteTable[i].x).width(noteTable[i].w).height(noteTable[i].h).show();
     });
 
+	$("#keyboard").bind('touchstart', function(e) {
+		e.preventDefault();
+
+		var rect = this.getBoundingClientRect();
+		var touches = e.originalEvent.changedTouches;
+		for (var touchIndex = 0; touchIndex < touches.length; touchIndex++) {
+    		var mouseX1 = touches[touchIndex].clientX - rect.left; 
+            var mouseY1 = touches[touchIndex].clientY - rect.top; 
+
+            var i = getNoteTableIndexFromPos(mouseX1, mouseY1);
+            var noteNo = noteTable[i].noteNo;
+
+            p.noteOn(noteNo, p.velocity);
+		    noteOnMap[touches[touchIndex].identifier] = noteNo;
+
+            $("#keymask").css("left", noteTable[i].x).width(noteTable[i].w).height(noteTable[i].h).show();
+        }
+	});
+
     $("#keyboard").mouseup(function(e) {
-        var noteNo = this.latestNoteNo;
+        var noteNo = noteOnMap['mousedown'];
 
         p.noteOff(noteNo);
 
         $("#keymask").hide();
     });
+
+	$("#keyboard").bind('touchend', function(e) {
+        var touches = e.originalEvent.changedTouches;
+        for (var touchIndex = 0; touchIndex < touches.length; touchIndex++) {
+            var noteNo = noteOnMap[touches[touchIndex].identifier];
+            p.noteOff(noteNo);
+
+            $("#keymask").hide();
+        }
+	});
 
     $("#button_egloop").mousedown(function(e) {
         var op = p.theAlgView.op;
