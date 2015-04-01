@@ -342,7 +342,11 @@ Application.prototype.onload = function() {
 				var noteNo = event.data[1];
 				var velocity = event.data[2];
 				if (status == 0x90) {
-					self.noteOn(noteNo, velocity / 127);
+					if (velocity == 0x00) {
+						self.noteOff(noteNo);
+					} else {
+						self.noteOn(noteNo, velocity / 127);
+					}
 				} else if (status == 0x80) {
 					self.noteOff(noteNo);
 				}
